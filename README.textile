@@ -1,1 +1,1 @@
-﻿This simple plugin takes any given Entry ID and returns the corresponding Entry Title or URL Title.
+﻿This simple plugin takes any given Entry ID or URL Title and returns the corresponding Entry Title or URL Title.

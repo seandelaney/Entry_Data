@@ -5,7 +5,7 @@ endif;
 
 $plugin_info = array(
 	'pi_name' => 'Entry Data',
-	'pi_version' => '1.0',
+	'pi_version' => '1.1',
 	'pi_author' => 'Sean Delaney',
 	'pi_author_url' => 'http://www.seandelaney.co.uk',
 	'pi_description' => 'Returns the URL Title or Entry Title for any specified channel Entry ID',
@@ -28,6 +28,7 @@ class Entry_Data {
 	private $errors;
 	private $query;
 	private $results;
+	private $url_title;
 	
 	public $return_data;
 
@@ -46,6 +47,7 @@ class Entry_Data {
 	 */
 	public function title() {
 		$this->entry_id = $this->EE->TMPL->fetch_param('entry_id');
+		$this->url_title = $this->EE->TMPL->fetch_param('url_title');
 		$this->errors = $this->EE->TMPL->fetch_param('errors');
 		
 		if(!empty($this->entry_id)) :
@@ -60,11 +62,19 @@ class Entry_Data {
 			else :
 				$this->return_data = $this->results->row('title');
 			endif;
-		else :
-			if($this->errors == 'false') :
-				$this->return_data = '';
+		endif;
+		
+		if(!empty($this->url_title)) :
+			$this->results = $this->EE->db->query('SELECT title FROM '.$this->EE->db->dbprefix('channel_titles').' WHERE url_title = "'.$this->url_title.'" LIMIT 1');
+	
+			if($this->results->num_rows() == 0) :
+				if($this->errors == 'false') :
+					$this->return_data = '';
+				else :
+					$this->return_data = 'No matching channel entry found';
+				endif;
 			else :
-				$this->return_data = 'No entry_id specified';
+				$this->return_data = $this->results->row('title');
 			endif;
 		endif;
 		
@@ -118,6 +128,8 @@ class Entry_Data {
 		ob_start(); 
 		?>
 		{exp:entry_data:title entry_id="1"}
+		
+		{exp:entry_data:title url_title="about-us"}
 		
 		{exp:entry_data:url_title entry_id="{entry_id}"}
 		<?php

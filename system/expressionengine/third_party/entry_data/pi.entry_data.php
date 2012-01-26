@@ -5,10 +5,10 @@ endif;
 
 $plugin_info = array(
 	'pi_name' => 'Entry Data',
-	'pi_version' => '1.1',
+	'pi_version' => '1.2',
 	'pi_author' => 'Sean Delaney',
 	'pi_author_url' => 'http://www.seandelaney.co.uk',
-	'pi_description' => 'Returns the URL Title or Entry Title for any specified channel Entry ID',
+	'pi_description' => 'Returns the URL Title or Entry Title for any specified channel Entry ID. Alternatively it can also return the Entry ID for any specified channel URL Title or Entry Title.',
 	'pi_usage' => entry_data::usage()
 );
 
@@ -40,7 +40,7 @@ class Entry_Data {
 	/**
 	 * Usage
 	 *
-	 * This function returns a channel entries Title based on an Entry ID.
+	 * This function returns a channel entries Title based on an Entry ID or URL Title.
 	 *
 	 * @access	public
 	 * @return	string
@@ -84,13 +84,14 @@ class Entry_Data {
 	/**
 	 * Usage
 	 *
-	 * This function returns a channel entries URL Title based on an Entry ID.
+	 * This function returns a channel entries URL Title based on an Entry ID or Entry Title.
 	 *
 	 * @access	public
 	 * @return	string
 	 */
 	public function url_title() {
 		$this->entry_id = $this->EE->TMPL->fetch_param('entry_id');
+		$this->title = $this->EE->TMPL->fetch_param('title');
 		$this->errors = $this->EE->TMPL->fetch_param('errors');
 		
 		if(!empty($this->entry_id)) :
@@ -105,11 +106,63 @@ class Entry_Data {
 			else :
 				$this->return_data = $this->results->row('url_title');
 			endif;
-		else :
-			if($this->errors == 'false') :
-				$this->return_data = '';
+		endif;
+		
+		if(!empty($this->title)) :
+			$this->results = $this->EE->db->query('SELECT url_title FROM '.$this->EE->db->dbprefix('channel_titles').' WHERE title = "'.$this->title.'" LIMIT 1');
+	
+			if($this->results->num_rows() == 0) :
+				if($this->errors == 'false') :
+					$this->return_data = '';
+				else :
+					$this->return_data = 'No matching channel entry found';
+				endif;
 			else :
-				$this->return_data = 'No entry_id specified';
+				$this->return_data = $this->results->row('url_title');
+			endif;
+		endif;
+		
+		return $this->return_data;
+	}
+	
+	/**
+	 * Usage
+	 *
+	 * This function returns a channel entries Entry ID based on an Entry Title or URL Title.
+	 *
+	 * @access	public
+	 * @return	string
+	 */
+	public function entry_id() {
+		$this->url_title = $this->EE->TMPL->fetch_param('url_title');
+		$this->title = $this->EE->TMPL->fetch_param('title');
+		$this->errors = $this->EE->TMPL->fetch_param('errors');
+		
+		if(!empty($this->url_title)) :
+			$this->results = $this->EE->db->query('SELECT entry_id FROM '.$this->EE->db->dbprefix('channel_titles').' WHERE url_title = "'.$this->url_title.'" LIMIT 1');
+	
+			if($this->results->num_rows() == 0) :
+				if($this->errors == 'false') :
+					$this->return_data = '';
+				else :
+					$this->return_data = 'No matching channel entry found';
+				endif;
+			else :
+				$this->return_data = $this->results->row('entry_id');
+			endif;
+		endif;
+		
+		if(!empty($this->title)) :
+			$this->results = $this->EE->db->query('SELECT entry_id FROM '.$this->EE->db->dbprefix('channel_titles').' WHERE title = "'.$this->title.'" LIMIT 1');
+	
+			if($this->results->num_rows() == 0) :
+				if($this->errors == 'false') :
+					$this->return_data = '';
+				else :
+					$this->return_data = 'No matching channel entry found';
+				endif;
+			else :
+				$this->return_data = $this->results->row('entry_id');
 			endif;
 		endif;
 		
@@ -132,6 +185,12 @@ class Entry_Data {
 		{exp:entry_data:title url_title="about-us"}
 		
 		{exp:entry_data:url_title entry_id="{entry_id}"}
+		
+		{exp:entry_data:url_title title="About Us"}
+		
+		{exp:entry_data:entry_id url_title="about-us"}
+		
+		{exp:entry_data:entry_id title="About Us"}
 		<?php
 		$buffer = ob_get_contents();
 

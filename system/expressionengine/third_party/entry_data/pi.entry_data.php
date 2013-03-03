@@ -5,10 +5,10 @@ endif;
 
 $plugin_info = array(
 	'pi_name' => 'Entry Data',
-	'pi_version' => '1.2',
-	'pi_author' => 'Sean Delaney',
+	'pi_version' => '1.3',
+	'pi_author' => 'Sean Delaney, Ahmad Saad Aldeen',
 	'pi_author_url' => 'http://www.seandelaney.co.uk',
-	'pi_description' => 'Returns the URL Title or Entry Title for any specified channel Entry ID. Alternatively it can also return the Entry ID for any specified channel URL Title or Entry Title.',
+	'pi_description' => 'Returns the URL Title or Entry Title for any specified channel Entry ID. Alternatively it can also return the Entry ID for any specified channel URL Title or Entry Title, and retrieval of custom filde value based on filed short name',
 	'pi_usage' => entry_data::usage()
 );
 
@@ -29,6 +29,8 @@ class Entry_Data {
 	private $query;
 	private $results;
 	private $url_title;
+	private $field_name;
+	private $field_id;
 	
 	public $return_data;
 
@@ -168,6 +170,80 @@ class Entry_Data {
 		
 		return $this->return_data;
 	}
+	
+	/**
+	 * Usage
+	 *
+	 * This function returns a channel entries custom field data based on an Entry ID or URL Title.
+	 *
+	 * @access	public
+	 * @return	string
+	 *
+	 * Add by Ahmad Saad Aldeen.	 
+	 */
+		public function custom_field() {
+		$this->entry_id = $this->EE->TMPL->fetch_param('entry_id');
+		$this->url_title = $this->EE->TMPL->fetch_param('url_title');
+		$this->title = $this->EE->TMPL->fetch_param('title');
+		$this->field_name = $this->EE->TMPL->fetch_param('field_name');		
+		$this->errors = $this->EE->TMPL->fetch_param('errors');
+		
+		if(empty($this->field_name)) :
+			if($this->errors == 'false') :
+				return $this->return_data = '';
+			else :
+				return $this->return_data = 'Field name is a required parameter, please enter a value';
+			endif;			
+		else :
+			$this->results = $this->EE->db->query('SELECT field_id FROM '.$this->EE->db->dbprefix('channel_fields').' WHERE field_name = "'.$this->field_name.'";');	
+						
+			if($this->results->num_rows() == 0) :
+				if($this->errors == 'false') :
+					return $this->return_data = '';
+				else :
+					return $this->return_data = 'No matching channel field found';
+				endif;
+			else :
+				$this->field_id = "field_id_".$this->results->row('field_id');
+			endif;				
+		endif;
+						
+		if(empty($this->entry_id)) :	
+			if(!empty($this->url_title)) :
+				$this->results = $this->EE->db->query('SELECT entry_id FROM '.$this->EE->db->dbprefix('channel_titles').' WHERE url_title = "'.$this->url_title.'" LIMIT 1');
+		
+				if($this->results->num_rows() == 0) :
+					if($this->errors == 'false') :
+						$this->return_data = '';
+					else :
+						$this->return_data = 'No matching channel entry found';
+					endif;
+				else :
+					$this->entry_id = $this->results->row('entry_id');
+				endif;		
+			elseif(!empty($this->title)) :
+				$this->results = $this->EE->db->query('SELECT entry_id FROM '.$this->EE->db->dbprefix('channel_titles').' WHERE title = "'.$this->title.'" LIMIT 1');
+		
+				if($this->results->num_rows() == 0) :
+					if($this->errors == 'false') :
+						$this->return_data = '';
+					else :
+						$this->return_data = 'No matching channel entry found';
+					endif;
+				else :
+					$this->entry_id = $this->results->row('entry_id');
+				endif;
+			endif;
+		endif;
+		
+		if(!empty($this->entry_id)) :
+			$this->results = $this->EE->db->query('SELECT '.$this->field_id.' FROM '.$this->EE->db->dbprefix('channel_data').' WHERE entry_id = "'.$this->entry_id.'" LIMIT 1');
+			
+			$this->return_data = $this->results->row($this->field_id);			
+		endif;
+		
+		return $this->return_data;
+	}
 
 	/**
 	 * Usage
@@ -191,6 +267,9 @@ class Entry_Data {
 		{exp:entry_data:entry_id url_title="about-us"}
 		
 		{exp:entry_data:entry_id title="About Us"}
+		
+		{exp:entry_data:custom_field url_title="about-us" field_name="about-us-summary"}
+		
 		<?php
 		$buffer = ob_get_contents();
 

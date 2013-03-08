@@ -5,10 +5,11 @@ endif;
 
 $plugin_info = array(
 	'pi_name' => 'Entry Data',
-	'pi_version' => '1.3',
-	'pi_author' => 'Sean Delaney, Ahmad Saad Aldeen',
-	'pi_author_url' => 'http://www.seandelaney.co.uk',
-	'pi_description' => 'Returns the URL Title or Entry Title for any specified channel Entry ID. Alternatively it can also return the Entry ID for any specified channel URL Title or Entry Title, and retrieval of custom filde value based on filed short name',
+	'pi_version' => '1.4',
+	'pi_author' => 'Sean Delaney',
+	'pi_contributor' => 'Ahmad Saad Aldeen',
+	'pi_author_url' => 'http://www.seandelaney.ie',
+	'pi_description' => 'Returns the URL Title or Entry Title for any specified channel Entry ID. Alternatively it can also return the Entry ID for any specified channel URL Title or Entry Title, and retrieval of custom field value based on filed short name',
 	'pi_usage' => entry_data::usage()
 );
 
@@ -19,7 +20,7 @@ $plugin_info = array(
  * @category		Plugin
  * @author			Sean Delaney
  * @copyright		Copyright (c) 2011
- * @link			http://www.seandelaney.co.uk
+ * @link			http://www.seandelaney.ie
  */
  
 class Entry_Data {
@@ -31,7 +32,6 @@ class Entry_Data {
 	private $url_title;
 	private $field_name;
 	private $field_id;
-	
 	public $return_data;
 
 	// Constructor
@@ -176,12 +176,12 @@ class Entry_Data {
 	 *
 	 * This function returns a channel entries custom field data based on an Entry ID or URL Title.
 	 *
+	 * Add by Ahmad Saad Aldeen.
+	 *	 
 	 * @access	public
 	 * @return	string
-	 *
-	 * Add by Ahmad Saad Aldeen.	 
 	 */
-		public function custom_field() {
+	public function custom_field() {
 		$this->entry_id = $this->EE->TMPL->fetch_param('entry_id');
 		$this->url_title = $this->EE->TMPL->fetch_param('url_title');
 		$this->title = $this->EE->TMPL->fetch_param('title');
@@ -195,7 +195,7 @@ class Entry_Data {
 				return $this->return_data = 'Field name is a required parameter, please enter a value';
 			endif;			
 		else :
-			$this->results = $this->EE->db->query('SELECT field_id FROM '.$this->EE->db->dbprefix('channel_fields').' WHERE field_name = "'.$this->field_name.'";');	
+			$this->results = $this->EE->db->query('SELECT field_id FROM '.$this->EE->db->dbprefix('channel_fields').' WHERE field_name = "'.$this->field_name.'"');	
 						
 			if($this->results->num_rows() == 0) :
 				if($this->errors == 'false') :

@@ -1,2 +1,2 @@
 ﻿This simple plugin takes any given Entry ID or URL Title and returns the corresponding Entry Title or URL Title. Alternatively it can also return the Entry ID for any specified channel URL Title or Entry Title.
-The newest add is return a custom field val by enter the field short name.
+The newest add is return a custom field val by enter the field short name. Channel names and Site IDs for MSM are also supported.

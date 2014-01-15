@@ -5,10 +5,10 @@ endif;
 
 $plugin_info = array(
 	'pi_name' => 'Entry Data',
-	'pi_version' => '1.6',
+	'pi_version' => '1.7',
 	'pi_author' => 'Sean Delaney',
 	'pi_author_url' => 'http://www.seandelaney.ie',
-	'pi_description' => 'Returns the URL Title or Entry Title for any specified channel Entry ID. Alternatively it can also return the Entry ID for any specified channel URL Title or Entry Title, and retrieval of custom field value based on filed short name. Channel names and Site IDs for MSM are also supported.',
+	'pi_description' => 'Returns the Channel ID, Entry ID, Title or URL Title for any specified channel Entry ID, Title, URL Title. Retrieval of custom field values are based on filed short name. Channel names and Site IDs for MSM are also supported.',
 	'pi_usage' => entry_data::usage()
 );
 
@@ -144,6 +144,65 @@ class Entry_Data {
 				endif;
 			else :
 				$this->return_data = $this->results->row('url_title');
+			endif;
+		endif;
+		
+		return $this->return_data;
+	}
+	
+	/**
+	 * Usage
+	 *
+	 * This function returns a channel entries URL Title based on an Entry ID or Entry Title.
+	 *
+	 * @access	public
+	 * @return	string
+	 */
+	public function channel_id() {
+		$this->entry_id = $this->EE->TMPL->fetch_param('entry_id');
+		$this->title = $this->EE->TMPL->fetch_param('title');
+		$this->url_title = $this->EE->TMPL->fetch_param('url_title');
+		$this->errors = $this->EE->TMPL->fetch_param('errors');
+		
+		if(!empty($this->entry_id)) :
+			$this->results = $this->EE->db->query('SELECT channel_id FROM '.$this->EE->db->dbprefix('channel_titles').' WHERE entry_id = '.$this->entry_id.' '.$this->channel_id.' '.$this->site_id.' LIMIT 1');
+	
+			if($this->results->num_rows() == 0) :
+				if($this->errors == 'false') :
+					$this->return_data = '';
+				else :
+					$this->return_data = 'No matching channel entry found';
+				endif;
+			else :
+				$this->return_data = $this->results->row('channel_id');
+			endif;
+		endif;
+		
+		if(!empty($this->title)) :
+			$this->results = $this->EE->db->query('SELECT channel_id FROM '.$this->EE->db->dbprefix('channel_titles').' WHERE title = "'.$this->title.'" '.$this->channel_id.' '.$this->site_id.' LIMIT 1');
+	
+			if($this->results->num_rows() == 0) :
+				if($this->errors == 'false') :
+					$this->return_data = '';
+				else :
+					$this->return_data = 'No matching channel entry found';
+				endif;
+			else :
+				$this->return_data = $this->results->row('channel_id');
+			endif;
+		endif;
+		
+		if(!empty($this->url_title)) :
+			$this->results = $this->EE->db->query('SELECT channel_id FROM '.$this->EE->db->dbprefix('channel_titles').' WHERE url_title = "'.$this->url_title.'" '.$this->channel_id.' '.$this->site_id.' LIMIT 1');
+	
+			if($this->results->num_rows() == 0) :
+				if($this->errors == 'false') :
+					$this->return_data = '';
+				else :
+					$this->return_data = 'No matching channel entry found';
+				endif;
+			else :
+				$this->return_data = $this->results->row('channel_id');
 			endif;
 		endif;
 		
@@ -292,6 +351,12 @@ class Entry_Data {
 		{exp:entry_data:entry_id title="About Us" channel="pages" site_id="1"}
 		
 		{exp:entry_data:custom_field url_title="about-us" field_name="about-us-summary" channel="pages" site_id="1"}
+		
+		{exp:entry_data:channel_id entry_id="{entry_id}" channel="pages" site_id="1"}
+		
+		{exp:entry_data:channel_id title="About Us" channel="pages" site_id="1"}
+		
+		{exp:entry_data:channel_id url_title="about-us" channel="pages" site_id="1"}
 		
 		<?php
 		$buffer = ob_get_contents();
